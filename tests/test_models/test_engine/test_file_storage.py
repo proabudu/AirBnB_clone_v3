@@ -6,7 +6,7 @@ Contains the TestFileStorageDocs classes
 import unittest
 from models.amenity import Amenity
 from models.base_model import BaseModel
-from models.engine import storage  # Assuming storage is an instance of FileStorage
+from models.engine import storage  # Assuming storage
 from models.user import User
 
 

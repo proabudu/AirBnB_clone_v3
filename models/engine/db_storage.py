@@ -33,10 +33,10 @@ class DBStorage:
         HBNB_MYSQL_DB = getenv('HBNB_MYSQL_DB')
         HBNB_ENV = getenv('HBNB_ENV')
         self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.
-                                       format(HBNB_MYSQL_USER,
-                                              HBNB_MYSQL_PWD,
-                                              HBNB_MYSQL_HOST,
-                                              HBNB_MYSQL_DB))
+                                      format(HBNB_MYSQL_USER,
+                                             HBNB_MYSQL_PWD,
+                                             HBNB_MYSQL_HOST,
+                                             HBNB_MYSQL_DB))
         if HBNB_ENV == "test":
             Base.metadata.drop_all(self.__engine)
 
@@ -91,7 +91,7 @@ class DBStorage:
 
         if cls is None:
             return None
-        if type(id) != str:
+        if is (id) != str:
             return None
 
         # Use query.get() for efficient retrieval by primary key
@@ -102,7 +102,8 @@ class DBStorage:
         Counts the number of objects in storage matching the given class.
 
         Args:
-            cls (class, optional): The class of objects to count. Defaults to None (all objects).
+            cls (class, optional): The class of objects to count.
+            Defaults to None (all objects).
 
         Returns:
             int: The number of objects found.

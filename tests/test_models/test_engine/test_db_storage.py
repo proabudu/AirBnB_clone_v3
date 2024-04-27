@@ -41,8 +41,10 @@ class TestDBStorage(unittest.TestCase):
         """
         all_objs = self.storage.all()
         self.assertIsInstance(all_objs, dict)
-        self.assertIn(f"{self.user.__class__.__name__}.{self.user.id}", all_objs)
-        self.assertIn(f"{self.place.__class__.__name__}.{self.place.id}", all_objs)
+        self.assertIn(f"{self.user.__class__.__name__}.
+                      {self.user.id}", all_objs)
+        self.assertIn(f"{self.place.__class__.__name__}.
+                      {self.place.id}", all_objs)
 
     def test_all_with_class(self):
         """

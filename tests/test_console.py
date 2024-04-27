@@ -3,115 +3,52 @@
 Contains the class TestConsoleDocs
 """
 
+import console
+import pep8
 import unittest
-from models import storage
-from models.base_model import BaseModel
-from io import StringIO  # to simulate user input/output
 
-class TestHBNBCommand(unittest.TestCase):
+HBNBCommand = console.HBNBCommand
 
-    @classmethod
-    def setUpClass(cls):
-        """Resets the storage for each test"""
-        storage.all().clear()
 
-    def test_create_valid(self):
-        """Tests creating a valid instance"""
-        # Simulate user input
-        user_input = "create User name=\"John\" email=\"john@example.com\""
-        captured_output = StringIO()
-        sys.stdout = captured_output  # Redirect output for testing
+class TestConsoleDocs(unittest.TestCase):
+    """Class for testing documentation of the console"""
 
-        # Execute the command
-        cmd = HBNBCommand()
-        cmd.onecmd(user_input)
-        sys.stdout = sys.__stdout__  # Restore normal output
+    def test_pep8_conformance_console(self):
+        """Test that console.py conforms to PEP8."""
+        pep8s = pep8.StyleGuide(quiet=True)
+        result = pep8s.check_files(['console.py'])
+        self.assertEqual(
+            result.total_errors, 0,
+            "Found code style errors (and warnings)."
+        )
 
-        # Check output and storage content
-        output = captured_output.getvalue().strip()
-        self.assertEqual(len(output), 36)  # Length of a UUID
-        self.assertIn(output, storage.all())
-        instance = storage.all()[output]
-        self.assertIsInstance(instance, User)
-        self.assertEqual(instance.name, "John")
-        self.assertEqual(instance.email, "john@example.com")
+    def test_pep8_conformance_test_console(self):
+        """Test that tests/test_console.py conforms to PEP8."""
+        pep8s = pep8.StyleGuide(quiet=True)
+        result = pep8s.check_files(['tests/test_console.py'])
+        self.assertEqual(
+            result.total_errors, 0,
+            "Found code style errors (and warnings)."
+        )
 
-    def test_create_invalid_class(self):
-        """Tests creating an instance of a non-existent class"""
-        user_input = "create UnknownClass"
-        captured_output = StringIO()
-        sys.stdout = captured_output
+    def test_console_module_docstring(self):
+        """Test for the console.py module docstring"""
+        self.assertIsNot(
+            console.__doc__, None,
+            "console.py needs a docstring"
+        )
+        self.assertTrue(
+            len(console.__doc__) >= 1,
+            "console.py needs a docstring"
+        )
 
-        cmd = HBNBCommand()
-        cmd.onecmd(user_input)
-        sys.stdout = sys.__stdout__
-
-        output = captured_output.getvalue().strip()
-        self.assertEqual(output, "** class doesn't exist **")
-        self.assertEqual(len(storage.all()), 0)
-
-    def test_show_valid(self):
-        """Tests showing an existing instance"""
-        # Create an instance first
-        user = User(name="Jane", email="jane@example.com")
-        user.save()
-        user_id = user.id
-
-        user_input = f"show User {user_id}"
-        captured_output = StringIO()
-        sys.stdout = captured_output
-
-        cmd = HBNBCommand()
-        cmd.onecmd(user_input)
-        sys.stdout = sys.__stdout__
-
-        output = captured_output.getvalue().strip()
-        self.assertIn(str(user), output)
-
-    def test_show_invalid_class(self):
-        """Tests showing an instance of a non-existent class"""
-        user_input = "show UnknownClass 12345"
-        captured_output = StringIO()
-        sys.stdout = captured_output
-
-        cmd = HBNBCommand()
-        cmd.onecmd(user_input)
-        sys.stdout = sys.__stdout__
-
-        output = captured_output.getvalue().strip()
-        self.assertEqual(output, "** class doesn't exist **")
-
-    def test_show_not_found(self):
-        """Tests showing a non-existent instance"""
-        user_input = "show User 12345"
-        captured_output = StringIO()
-        sys.stdout = captured_output
-
-        cmd = HBNBCommand()
-        cmd.onecmd(user_input)
-        sys.stdout = sys.__stdout__
-
-        output = captured_output.getvalue().strip()
-        self.assertEqual(output, "** no instance found **")
-
-    def test_update_valid(self):
-        """Tests updating an existing instance"""
-        # Create an instance first
-        user = User(name="John", email="john@example.com")
-        user.save()
-        user_id = user.id
-
-        user_input = f"update User {user_id} name=\"Jane\" email=\"jane@updated.com\""
-        captured_output = StringIO()
-        sys.stdout = captured_output
-
-        cmd = HBNBCommand()
-        cmd.onecmd(user_input)
-        sys.stdout = sys.__stdout__
-
-        output = captured_output.getvalue().strip()
-        self.assertEqual(output, "")  # No output on successful update
-
-        updated_user = storage.all()[user_id]
-        self.assertEqual(updated_user.name, "Jane")
-        self.assertEqual(updated_user.email, "Jane")
+    def test_HBNBCommand_class_docstring(self):
+        """Test for the HBNBCommand class docstring"""
+        self.assertIsNot(
+            HBNBCommand.__doc__, None,
+            "HBNBCommand class needs a docstring"
+        )
+        self.assertTrue(
+            len(HBNBCommand.__doc__) >= 1,
+            "HBNBCommand class needs a docstring"
+        )

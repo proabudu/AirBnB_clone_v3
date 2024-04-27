@@ -6,6 +6,7 @@ Contains the TestUserDocs classes
 import unittest
 from models.user import User
 
+
 class TestUser(unittest.TestCase):
 
     def test_tablename(self):
@@ -37,6 +38,7 @@ class TestUser(unittest.TestCase):
         self.assertEqual(user.places.backref, "user")
 
         # Similar assertion for reviews relationship
+
 
 if __name__ == '__main__':
     unittest.main()
