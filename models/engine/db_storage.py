@@ -16,6 +16,7 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+
 classes = {"Amenity": Amenity, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
 
@@ -33,10 +34,10 @@ class DBStorage:
         HBNB_MYSQL_DB = getenv('HBNB_MYSQL_DB')
         HBNB_ENV = getenv('HBNB_ENV')
         self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.
-                                      format(HBNB_MYSQL_USER,
-                                             HBNB_MYSQL_PWD,
-                                             HBNB_MYSQL_HOST,
-                                             HBNB_MYSQL_DB))
+                                     format(HBNB_MYSQL_USER,
+                                            HBNB_MYSQL_PWD,
+                                            HBNB_MYSQL_HOST,
+                                            HBNB_MYSQL_DB))
         if HBNB_ENV == "test":
             Base.metadata.drop_all(self.__engine)
 
@@ -79,41 +80,35 @@ class DBStorage:
 
     def get(self, cls, id):
         """
-        Retrieves a single object based on its class and ID.
+        Retrieves an object based on the class and its ID.
 
         Args:
             cls (class): The class of the object to retrieve.
-            id (str): The ID of the object to retrieve.
+            id (string): The ID of the object to retrieve.
 
         Returns:
-            object: The retrieved object, or None if not found.
+            The object based on the class and its ID, or None if not found.
         """
 
         if cls is None:
             return None
-        if is (id) != str:
+        if type(id) != str:
             return None
 
-        # Use query.get() for efficient retrieval by primary key
-        return self.__session.query(cls).get(id)
+        return self.__session.query(cls).filter_by(id=id).first()
 
     def count(self, cls=None):
         """
         Counts the number of objects in storage matching the given class.
 
         Args:
-            cls (class, optional): The class of objects to count.
-            Defaults to None (all objects).
+            cls (class, optional): The class of objects to count. Defaults to None,
+                                    which counts all objects in storage.
 
         Returns:
-            int: The number of objects found.
+            int: The number of objects in storage matching the given class.
         """
 
-        query = self.__session.query(cls)  # Base query for counting
-
-        # If no class is specified, count all objects
         if cls is None:
-            return query.count()
-
-        # Otherwise, count objects of the specific class
-        return query.count()
+            return self.__session.query(BaseModel).count()
+        return self.__session.query(cls).count()

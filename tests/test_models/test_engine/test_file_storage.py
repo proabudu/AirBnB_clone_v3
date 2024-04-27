@@ -1,61 +1,52 @@
-#!/usr/bin/python3
-"""
-Contains the TestFileStorageDocs classes
-"""
-
 import unittest
 from models.amenity import Amenity
 from models.base_model import BaseModel
-from models.engine import storage  # Assuming storage
+from models.engine import DBStorage
 from models.user import User
+from models.__init__ import metadata
+from file_storage import FileStorage
 
 
 class TestFileStorage(unittest.TestCase):
 
     def setUp(self):
-        self.obj1 = User(name="John", email="john@doe.com", password="secret")
-        self.obj2 = Amenity(name="wifi")
-        storage.new(self.obj1)
-        storage.new(self.obj2)
-        storage.save()
+        self.storage = FileStorage()
+        self.user1 = User(email="john.doe@example.com", password="secret")
+        self.user2 = User(email="jane.doe@example.com", password="secret2")
+        self.storage.new(self.user1)
+        self.storage.new(self.user2)
+        self.storage.save()
 
     def tearDown(self):
-        storage.delete(self.obj1)
-        storage.delete(self.obj2)
-        storage.save()
+        self.storage.delete(self.user1)
+        self.storage.delete(self.user2)
+        self.storage.save()
+        DBStorage.close()
+        metadata.drop_all(DBStorage().engine)
 
-    def test_all(self):
-        all_objs = storage.all()
-        self.assertIsInstance(all_objs, dict)
+    def test_get_all(self):
+        all_objs = self.storage.all()
         self.assertEqual(len(all_objs), 2)
+        self.assertIsInstance(all_objs[next(iter(all_objs))], User)
 
-    def test_all_filtered(self):
-        user_objs = storage.all(User)
-        self.assertIsInstance(user_objs, dict)
-        self.assertEqual(len(user_objs), 1)
-        self.assertEqual(user_objs["User.{}".format(self.obj1.id)], self.obj1)
+    def test_get_all_by_class(self):
+        user_objs = self.storage.all(User)
+        self.assertEqual(len(user_objs), 2)
+        for obj in user_objs.values():
+            self.assertIsInstance(obj, User)
 
-    def test_new(self):
-        new_obj = User(name="Jane", email="jane@doe.com", password="secret2")
-        storage.new(new_obj)
-        storage.save()
-        retrieved_obj = storage.get(User, new_obj.id)
-        self.assertEqual(retrieved_obj, new_obj)
-        storage.delete(new_obj)
-        storage.save()
+    def test_get_none(self):
+        self.assertIsNone(self.storage.get(None, "123"))
+        self.assertIsNone(self.storage.get(User, "non-existent-id"))
 
-    def test_get(self):
-        retrieved_obj = storage.get(User, self.obj1.id)
-        self.assertEqual(retrieved_obj, self.obj1)
-        self.assertIsNone(storage.get(User, "non-existent-id"))
+    def test_get_by_class_and_id(self):
+        user1_retrieved = self.storage.get(User, self.user1.id)
+        self.assertEqual(user1_retrieved, self.user1)
 
     def test_count(self):
-        self.assertEqual(storage.count(), 2)
-        self.assertEqual(storage.count(User), 1)
-
-    def test_save(self):
-        # Saving already calls self.reload(), so no separate test needed
-
+        self.assertEqual(self.storage.count(), 2)
+        self.assertEqual(self.storage.count(User), 2)
+        self.assertEqual(self.storage.count(Amenity), 0)  # No Amenity objects created
 
 if __name__ == "__main__":
     unittest.main()

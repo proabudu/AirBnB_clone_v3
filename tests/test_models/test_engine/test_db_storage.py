@@ -1,96 +1,70 @@
-#!/usr/bin/python3
-"""
-Contains the TestDBStorageDocs and TestDBStorage classes
-"""
-
 import unittest
-from models import amenity, base_model, city, place, review, state, user
+from models.amenity import Amenity
+from models.base_model import BaseModel
 from models.engine import DBStorage
+from models.user import User
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 class TestDBStorage(unittest.TestCase):
-    """
-    Unit tests for DBStorage class methods.
-    """
 
     @classmethod
     def setUpClass(cls):
-        """
-        Sets up the test environment before running any tests.
-        """
-        cls.storage = DBStorage()
-        cls.user = user.User(email="test@example.com", password="test123")
-        cls.place = place.Place(name="Test Place", city_id="1234")
-        cls.storage.new(cls.user)
-        cls.storage.new(cls.place)
-        cls.storage.save()
+        # Create a temporary engine for testing
+        cls.engine = create_engine('sqlite:///:memory:')
+        # Bind the engine to the global metadata object
+        Base.metadata.create_all(cls.engine)
+
+        # Set up a temporary session for testing
+        Session = sessionmaker(bind=cls.engine)
+        cls.session = Session()
 
     @classmethod
     def tearDownClass(cls):
-        """
-        Tears down the test environment after all tests have run.
-        """
-        cls.storage.delete(cls.user)
-        cls.storage.delete(cls.place)
-        cls.storage.save()
-        cls.storage.close()
+        # Drop all tables after tests are finished
+        Base.metadata.drop_all(cls.engine)
+        # Close the session
+        cls.session.close()
+
+    def setUp(self):
+        self.db = DBStorage()
+        self.db.reload()  # Create all tables
+
+        self.user1 = User(email="john.doe@example.com", password="secret")
+        self.user2 = User(email="jane.doe@example.com", password="secret2")
+        self.db.new(self.user1)
+        self.db.new(self.user2)
+        self.db.save()
+
+    def tearDown(self):
+        self.db.delete(self.user1)
+        self.db.delete(self.user2)
+        self.db.save()
 
     def test_all(self):
-        """
-        Tests the `all` method to retrieve all objects from storage.
-        """
-        all_objs = self.storage.all()
-        self.assertIsInstance(all_objs, dict)
-        self.assertIn(f"{self.user.__class__.__name__}.
-                      {self.user.id}", all_objs)
-        self.assertIn(f"{self.place.__class__.__name__}.
-                      {self.place.id}", all_objs)
+        all_objs = self.db.all()
+        self.assertEqual(len(all_objs), 2)
+        self.assertIsInstance(all_objs[next(iter(all_objs))], User)
 
-    def test_all_with_class(self):
-        """
-        Tests the `all` method with a specific class argument.
-        """
-        user_objs = self.storage.all(user.User)
-        self.assertIsInstance(user_objs, dict)
-        self.assertEqual(len(user_objs), 1)
-        self.assertIn(f"{user.User.__name__}.{self.user.id}", user_objs)
+    def test_all_by_class(self):
+        user_objs = self.db.all(User)
+        self.assertEqual(len(user_objs), 2)
+        for obj in user_objs.values():
+            self.assertIsInstance(obj, User)
 
-    def test_new(self):
-        """
-        Tests the `new` method to add an object to storage.
-        """
-        new_amenity = amenity.Amenity(name="Test Amenity")
-        self.storage.new(new_amenity)
-        self.storage.save()
+    def test_get_none(self):
+        self.assertIsNone(self.db.get(None, "123"))
+        self.assertIsNone(self.db.get(User, "non-existent-id"))
 
-        amenity_obj = self.storage.get(amenity.Amenity, new_amenity.id)
-        self.assertIs not None(amenity_obj)
-        self.assertEqual(amenity_obj.name, "Test Amenity")
-
-        self.storage.delete(new_amenity)
-        self.storage.save()
-
-    def test_get(self):
-        """
-        Tests the `get` method to retrieve an object by class and ID.
-        """
-        retrieved_user = self.storage.get(user.User, self.user.id)
-        self.assertIsInstance(retrieved_user, user.User)
-        self.assertEqual(retrieved_user.email, "test@example.com")
-
-        # Test getting a non-existent object
-        self.assertIsNone(self.storage.get(state.State, "non-existent-id"))
+    def test_get_by_class_and_id(self):
+        user1_retrieved = self.db.get(User, self.user1.id)
+        self.assertEqual(user1_retrieved, self.user1)
 
     def test_count(self):
-        """
-        Tests the `count` method to get the number of objects in storage.
-        """
-        total_count = self.storage.count()
-        self.assertGreater(total_count, 1)  # At least 2 objects (user & place)
-
-        user_count = self.storage.count(user.User)
-        self.assertEqual(user_count, 1)
-
+        self.assertEqual(self.db.count(), 2)
+        self.assertEqual(self.db.count(User), 2)
+        self.assertEqual(self.db.count(Amenity), 0)  # No Amenity objects created
 
 if __name__ == "__main__":
     unittest.main()

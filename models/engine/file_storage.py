@@ -55,7 +55,7 @@ class FileStorage:
                 jo = json.load(f)
             for key in jo:
                 self.__objects[key] = classes[jo[key]["__class__"]](**jo[key])
-        except FileNotFoundError:
+        except:
             pass
 
     def delete(self, obj=None):
@@ -69,34 +69,42 @@ class FileStorage:
         """call reload() method for deserializing the JSON file to objects"""
         self.reload()
 
-    # New methods in storage_get_count branch
+    # New methods for storage_get_count branch
 
     def get(self, cls, id):
         """
         Retrieves an object based on the class and its ID.
 
         Args:
-            cls: The class of the object to retrieve.
-            id: The ID of the object to retrieve.
+            cls (class): The class of the object to retrieve.
+            id (string): The ID of the object to retrieve.
 
         Returns:
             The object based on the class and its ID, or None if not found.
         """
-        key = f"{cls.__name__}.{id}"
+
+        if cls is None or type(id) != str:
+            return None
+
+        key = cls.__name__ + '.' + id
         return self.__objects.get(key)
 
     def count(self, cls=None):
         """
-        Counts the number of objects in storage.
+        Counts the number of objects in storage matching the given class.
 
         Args:
-            cls (class, optional): The class to filter by.
-            Defaults to None (all objects).
+            cls (class, optional): The class of objects to count. Defaults to None,
+                                    which counts all objects in storage.
 
         Returns:
-            int: The number of objects in storage matching the given class,
-                 or the total count of objects if no class is passed.
+            int: The number of objects in storage matching the given class.
         """
+
         if cls is None:
             return len(self.__objects)
-    return sum(1 for obj in self.__objects.values() if isinstance(obj, cls))
+        count = 0
+        for key, obj in self.__objects.items():
+            if isinstance(obj, cls):
+                count += 1
+        return count
