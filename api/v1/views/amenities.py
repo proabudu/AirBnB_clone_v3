@@ -11,7 +11,7 @@ from flasgger.utils import swag_from
 
 @app_views.route('/amenities', methods=['GET'], strict_slashes=False)
 @swag_from('documentation/amenity/get.yml', methods=['GET'])
-    def get_all_amenities():
+def get_all_amenities():
         """ get amenities by id """
         all_list = [obj.to_dict() for obj in storage.all(Amenity).values()]
         return jsonify(all_list)
@@ -20,7 +20,7 @@ from flasgger.utils import swag_from
 @app_views.route('/amenities/<string:amenity_id>', methods=['GET'],
                  strict_slashes=False)
 @swag_from('documentation/amenity/get_id.yml', methods=['GET'])
-    def get_amenity(amenity_id):
+def get_amenity(amenity_id):
         """ get amenity by id"""
         amenity = storage.get(Amenity, amenity_id)
         if amenity is None:
@@ -31,7 +31,7 @@ from flasgger.utils import swag_from
 @app_views.route('/amenities/<string:amenity_id>', methods=['DELETE'],
                  strict_slashes=False)
 @swag_from('documentation/amenity/delete.yml', methods=['DELETE'])
-    def del_amenity(amenity_id):
+def del_amenity(amenity_id):
         """ delete amenity by id"""
         amenity = storage.get(Amenity, amenity_id)
         if amenity is None:
@@ -44,7 +44,7 @@ from flasgger.utils import swag_from
 @app_views.route('/amenities/', methods=['POST'],
                  strict_slashes=False)
 @swag_from('documentation/amenity/post.yml', methods=['POST'])
-    def create_obj_amenity():
+def create_obj_amenity():
         """ create new instance """
         if not request.get_json():
             return make_response(jsonify({"error": "Not a JSON"}), 400)
@@ -59,7 +59,7 @@ from flasgger.utils import swag_from
 @app_views.route('/amenities/<string:amenity_id>', methods=['PUT'],
                  strict_slashes=False)
 @swag_from('documentation/amenity/put.yml', methods=['PUT'])
-    def post_amenity(amenity_id):
+def post_amenity(amenity_id):
         """  """
         if not request.get_json():
             return make_response(jsonify({"error": "Not a JSON"}), 400)
