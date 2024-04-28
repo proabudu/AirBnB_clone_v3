@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 """
 This module contains endpoint(route) status
 """
@@ -15,6 +16,7 @@ def status():
     Returns a JSON status
     """
     return jsonify({"status": "OK"})
+
 
 @app_views.route('/stats', strict_slashes=False)
 def count():
